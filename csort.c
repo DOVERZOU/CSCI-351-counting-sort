@@ -1,3 +1,6 @@
+/* OpenMP API*/
+#include <omp.h>
+
 /* assert */
 #include <assert.h>
 
@@ -13,13 +16,18 @@ csort(unsigned const k,
       unsigned const * const in,
       unsigned       * const out)
 {
+
+  
   unsigned * const count = calloc(k + 1, sizeof(*count));
   if (NULL == count) {
     return -1;
   }
-
-  for (unsigned i = 0; i < n; i++) {
+# pragma omp parallel num_threads(4)
+  {
+# pragma omp for
+    for (unsigned i = 0; i < n; i++) {
     count[in[i]]++;
+  }
   }
 
   unsigned total = 0;
@@ -28,13 +36,14 @@ csort(unsigned const k,
     count[i] = total;
     total += counti;
   }
-
+# pragma omp parallel for num_threads(2)
   for (unsigned i = 0; i < n; i++) {
     out[count[in[i]]] = in[i];
     count[in[i]]++;
   }
-
+  
   free(count);
+  
 
   return 0;
 }
